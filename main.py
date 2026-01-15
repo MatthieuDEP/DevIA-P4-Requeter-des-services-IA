@@ -30,7 +30,7 @@ if api_token != os.environ['HUGGING_TOKEN']:
 
 
 # Test requête
-API_URL = "https://api-inference.huggingface.co/models/sayeed99/segformer_b3_clothes" # Remplacez ... par le bon endpoint.
+API_URL = "https://router.huggingface.co/hf-inference/models/sayeed99/segformer_b3_clothes" # Remplacez ... par le bon endpoint.
 headers = {
     "Authorization": f"Bearer {api_token}"
     # Le "Content-Type" sera ajouté dynamiquement lors de l'envoi de l'image
@@ -141,3 +141,55 @@ def create_masks(results, width, height):
             combined_mask[mask_array > 0] = 0 # Class ID for Background is 0
 
     return combined_mask
+
+
+# Segmentation d'une seule image
+if image_paths:
+    single_image_path = image_paths[0] # Prenons la première image de notre liste
+    print(f"Traitement de l'image : {single_image_path}")
+
+    try:
+        # Lire l'image en binaire
+        # Et mettez le contenu de l'image dans la variable image_data
+        with open(single_image_path, "rb") as f:
+            image_data = f.read() # A vous de jouer !
+
+        # Maintenant, utilisé l'API huggingface
+        # ainsi que les fonctions données plus haut pour ségmenter vos images.
+        headers_local = headers.copy()
+        headers_local["Content-Type"] = "image/png"
+
+        response = requests.post(API_URL, headers=headers_local, data=image_data)
+        response.raise_for_status()
+        results = response.json()
+
+        width, height = get_image_dimensions(single_image_path)
+        segmentation_mask = create_masks(results, width, height)
+        print("Segmentation réussie, affichage des résultats...")
+
+        original_image = Image.open(single_image_path)
+
+        plt.figure(figsize=(10, 5))
+
+        # Image originale
+        plt.subplot(1, 2, 1)
+        plt.imshow(original_image)
+        plt.title("Image originale")
+        plt.axis("off")
+
+        # Masque segmenté
+        plt.subplot(1, 2, 2)
+        plt.imshow(segmentation_mask, cmap="tab20")
+        plt.title("Masque segmenté")
+        plt.axis("off")
+
+        plt.tight_layout()
+        output_path = "segmentation_result.png"
+        plt.savefig(output_path)
+        plt.close()
+        print(f"Résultat sauvegardé dans : {output_path}")
+
+    except Exception as e:
+        print(f"Une erreur est survenue : {e}")
+else:
+    print("Aucune image à traiter. Vérifiez la configuration de 'image_dir' et 'max_images'.")
