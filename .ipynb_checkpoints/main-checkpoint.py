@@ -3,12 +3,14 @@ import requests
 from PIL import Image
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+from matplotlib.gridspec import GridSpec
 import numpy as np
 from tqdm.auto import tqdm
 import base64
 import io
 from dotenv import load_dotenv
 import time
+
 
 load_dotenv()
 
@@ -148,60 +150,60 @@ def create_masks(results, width, height):
 
 
 
-# # Segmentation d'une seule image
-# if image_paths:
-#     single_image_path = image_paths[0] # Prenons la première image de notre liste
-#     print(f"Traitement de l'image : {single_image_path}")
+# Segmentation d'une seule image
+if image_paths:
+    single_image_path = image_paths[0] # Prenons la première image de notre liste
+    print(f"Traitement de l'image : {single_image_path}")
 
-#     try:
-#         # Lire l'image en binaire
-#         # Et mettez le contenu de l'image dans la variable image_data
-#         with open(single_image_path, "rb") as f:
-#             image_data = f.read() # A vous de jouer !
+    try:
+        # Lire l'image en binaire
+        # Et mettez le contenu de l'image dans la variable image_data
+        with open(single_image_path, "rb") as f:
+            image_data = f.read() # A vous de jouer !
 
-#         # Maintenant, utilisé l'API huggingface
-#         # ainsi que les fonctions données plus haut pour ségmenter vos images.
-#         headers_local = headers.copy()
-#         headers_local["Content-Type"] = "image/png"
+        # Maintenant, utilisé l'API huggingface
+        # ainsi que les fonctions données plus haut pour ségmenter vos images.
+        headers_local = headers.copy()
+        headers_local["Content-Type"] = "image/png"
 
-#         response = requests.post(
-#             API_URL, 
-#             headers=headers_local, 
-#             data=image_data
-#             )
-#         response.raise_for_status()
-#         results = response.json()
+        response = requests.post(
+            API_URL, 
+            headers=headers_local, 
+            data=image_data
+            )
+        response.raise_for_status()
+        results = response.json()
 
-#         width, height = get_image_dimensions(single_image_path)
-#         segmentation_mask = create_masks(results, width, height)
-#         print("Segmentation réussie, affichage des résultats...")
+        width, height = get_image_dimensions(single_image_path)
+        segmentation_mask = create_masks(results, width, height)
+        print("Segmentation réussie, affichage des résultats...")
 
-#         original_image = Image.open(single_image_path)
+        original_image = Image.open(single_image_path)
 
-#         plt.figure(figsize=(10, 5))
+        plt.figure(figsize=(10, 5))
 
-#         # Image originale
-#         plt.subplot(1, 2, 1)
-#         plt.imshow(original_image)
-#         plt.title("Image originale")
-#         plt.axis("off")
+        # Image originale
+        plt.subplot(1, 2, 1)
+        plt.imshow(original_image)
+        plt.title("Image originale")
+        plt.axis("off")
 
-#         # Masque segmenté
-#         plt.subplot(1, 2, 2)
-#         plt.imshow(segmentation_mask, cmap="tab20")
-#         plt.title("Masque segmenté")
-#         plt.axis("off")
+        # Masque segmenté
+        plt.subplot(1, 2, 2)
+        plt.imshow(segmentation_mask, cmap="tab20")
+        plt.title("Masque segmenté")
+        plt.axis("off")
 
-#         plt.tight_layout()
-#         output_path = "segmentation_result.png"
-#         plt.savefig(output_path)
-#         plt.close()
-#         print(f"Résultat sauvegardé dans : {output_path}")
+        plt.tight_layout()
+        output_path = "segmentation_result.png"
+        plt.savefig(output_path)
+        plt.close()
+        print(f"Résultat sauvegardé dans : {output_path}")
 
-#     except Exception as e:
-#         print(f"Une erreur est survenue : {e}")
-# else:
-#     print("Aucune image à traiter. Vérifiez la configuration de 'image_dir' et 'max_images'.")
+    except Exception as e:
+        print(f"Une erreur est survenue : {e}")
+else:
+    print("Aucune image à traiter. Vérifiez la configuration de 'image_dir' et 'max_images'.")
 
 
 
@@ -315,6 +317,7 @@ def colorize_mask(mask, colormap):
 
     return colored
 
+
 def overlay_image_mask(image, colored_mask, alpha=0.3):
     """Superpose le masque colorisé à l'image originale."""
     image_np = np.array(image)
@@ -336,6 +339,7 @@ def create_legend_patches_from_mask(mask, colormap, labels):
         patches.append(mpatches.Patch(color=color, label=name))
 
     return patches
+
 
 def display_segmented_images_batch(original_image_paths, segmentation_masks):
     """
